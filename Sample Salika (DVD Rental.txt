@@ -1,0 +1,797 @@
+create database SampleSalika;
+use SampleSalika;
+
+CREATE TABLE actor (
+  actor_id    SMALLINT     UNSIGNED NOT NULL AUTO_INCREMENT,
+  first_name  VARCHAR(45)  NOT NULL,
+  last_name   VARCHAR(45)  NOT NULL,
+  last_update TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (actor_id),
+  KEY idx_actor_last_name (last_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO actor (first_name, last_name) VALUES ('Parmod', 'Doe');
+INSERT INTO actor (first_name, last_name) VALUES ('Gaurav', 'Smith');
+INSERT INTO actor (first_name, last_name) VALUES ('Aman', 'Kumar');
+INSERT INTO actor (first_name, last_name) VALUES ('Ajay', 'khurana');
+INSERT INTO actor (first_name, last_name) VALUES ('Aditya', 'Dabas');
+INSERT INTO actor (first_name, last_name) VALUES ('Neeru', 'Aiden');
+INSERT INTO actor (first_name, last_name) VALUES ('Himanshu', 'Sehgal');
+INSERT INTO actor (first_name, last_name) VALUES ('Pawan', 'Gurpal');
+INSERT INTO actor (first_name, last_name) VALUES ('Rishabh', 'Munjal');
+INSERT INTO actor (first_name, last_name) VALUES ('Kapil', 'Dua');
+
+CREATE TABLE language ( 
+  language_id  TINYINT    UNSIGNED NOT NULL AUTO_INCREMENT,
+  name         CHAR(20)   NOT NULL,
+  last_update  TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (language_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO language (name) VALUES ('English');
+INSERT INTO language (name) VALUES ('Spanish');
+INSERT INTO language (name) VALUES ('French');
+INSERT INTO language (name) VALUES ('German');
+INSERT INTO language (name) VALUES ('Chinese');
+INSERT INTO language (name) VALUES ('Japanese');
+INSERT INTO language (name) VALUES ('Russian');
+INSERT INTO language (name) VALUES ('Arabic');
+INSERT INTO language (name) VALUES ('Hindi');
+INSERT INTO language (name) VALUES ('Portuguese');
+
+CREATE TABLE film (
+  film_id              SMALLINT     UNSIGNED NOT NULL AUTO_INCREMENT,
+  title                VARCHAR(255) NOT NULL,
+  description          TEXT         DEFAULT NULL,       -- Up to 64KB
+  release_year         YEAR         DEFAULT NULL,       -- 'yyyy'
+  language_id          TINYINT      UNSIGNED NOT NULL,  -- 8-bit unsigned int [0, 255]
+  original_language_id TINYINT      UNSIGNED DEFAULT NULL,
+  rental_duration      TINYINT      UNSIGNED NOT NULL DEFAULT 3,
+  rental_rate          DECIMAL(4,2) NOT NULL DEFAULT 4.99,  
+                                    -- DECIMAL is precise and ideal for currency [99.99]. UNSIGNED?
+  length               SMALLINT     UNSIGNED DEFAULT NULL,  -- 16-bit unsigned int [0, 65535]
+  replacement_cost     DECIMAL(5,2) NOT NULL DEFAULT 19.99, -- [999.99], UNSIGNED??
+  rating               ENUM('G','PG','PG-13','R','NC-17') DEFAULT 'G',
+  special_features     SET('Trailers','Commentaries','Deleted Scenes','Behind the Scenes') DEFAULT NULL,
+                                    -- Can take zero or more values from a SET
+                                    -- But only one value from ENUM
+  last_update          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (film_id),
+  KEY idx_title (title),
+  KEY idx_fk_language_id (language_id),
+  KEY idx_fk_original_language_id (original_language_id),
+        -- To build index on title, language_id, original_language_id and film_id (primary key)
+  CONSTRAINT fk_film_language FOREIGN KEY (language_id) REFERENCES language (language_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+        -- Cannot delete parent record if there is any matching child record
+        -- Update the matching child records if parent record is updated
+  CONSTRAINT fk_film_language_original FOREIGN KEY (original_language_id) REFERENCES language (language_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO film (title, description, release_year, language_id, original_language_id, rental_duration, rental_rate, length, replacement_cost, rating, special_features)
+VALUES
+  ('The Matrix', 'A mind-bending sci-fi thriller', 1999, 1, NULL, 5, 4.99, 136, 19.99, 'R', 'Trailers,Commentaries'),
+  ('Inception', 'Dreams within dreams', 2010, 1, NULL, 3, 4.99, 148, 19.99, 'PG-13', 'Trailers,Behind the Scenes'),
+  ('Pulp Fiction', 'Quentin Tarantino classic', 1994, 1, NULL, 7, 4.99, 154, 19.99, 'R', 'Deleted Scenes'),
+  ('Titanic', 'Epic romance and tragedy', 1997, 1, NULL, 7, 4.99, 195, 19.99, 'PG-13', 'Trailers,Commentaries,Deleted Scenes'),
+  ('Jurassic Park', 'Dinosaurs on the loose', 1993, 1, NULL, 5, 4.99, 127, 19.99, 'PG-13', 'Trailers'),
+  ('Avatar', 'Visually stunning sci-fi adventure', 2009, 1, NULL, 3, 4.99, 162, 19.99, 'PG-13', 'Trailers,Commentaries'),
+  ('Forrest Gump', 'Life is like a box of chocolates', 1994, 1, NULL, 7, 4.99, 142, 19.99, 'PG-13', 'Commentaries,Behind the Scenes'),
+  ('The Dark Knight', 'Gothams vigilante hero', 2008, 1, NULL, 3, 4.99, 152, 19.99, 'PG-13', 'Trailers,Commentaries,Deleted Scenes'),
+  ('Gladiator', 'Ancient Rome epic', 2000, 1, NULL, 5, 4.99, 155, 19.99, 'R', 'Trailers,Commentaries'),
+  ('Braveheart', 'Scottish warrior fights for freedom', 1995, 1, NULL, 7, 4.99, 177, 19.99, 'R', 'Trailers,Commentaries,Deleted Scenes,Behind the Scenes');
+
+CREATE TABLE film_actor (
+  actor_id     SMALLINT UNSIGNED NOT NULL,
+  film_id      SMALLINT UNSIGNED NOT NULL,
+  last_update  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (actor_id, film_id),
+  KEY idx_fk_film_id (`film_id`),
+  CONSTRAINT fk_film_actor_actor FOREIGN KEY (actor_id) REFERENCES actor (actor_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_film_actor_film FOREIGN KEY (film_id) REFERENCES film (film_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO film_actor (actor_id, film_id) VALUES (1, 1);
+INSERT INTO film_actor (actor_id, film_id) VALUES (2, 2);
+INSERT INTO film_actor (actor_id, film_id) VALUES (3, 3);
+INSERT INTO film_actor (actor_id, film_id) VALUES (4, 4);
+INSERT INTO film_actor (actor_id, film_id) VALUES (5, 5);
+INSERT INTO film_actor (actor_id, film_id) VALUES (6, 6);
+INSERT INTO film_actor (actor_id, film_id) VALUES (7, 7);
+INSERT INTO film_actor (actor_id, film_id) VALUES (8, 8);
+INSERT INTO film_actor (actor_id, film_id) VALUES (9, 9);
+INSERT INTO film_actor (actor_id, film_id) VALUES (10, 10);
+
+CREATE TABLE category (
+  category_id  TINYINT      UNSIGNED NOT NULL AUTO_INCREMENT,
+  name         VARCHAR(25)  NOT NULL,
+  last_update  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (category_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO category (name) VALUES ('Action');
+INSERT INTO category (name) VALUES ('Comedy');
+INSERT INTO category (name) VALUES ('Drama');
+INSERT INTO category (name) VALUES ('Science Fiction');
+INSERT INTO category (name) VALUES ('Romance');
+INSERT INTO category (name) VALUES ('Thriller');
+INSERT INTO category (name) VALUES ('Adventure');
+INSERT INTO category (name) VALUES ('Fantasy');
+INSERT INTO category (name) VALUES ('Animation');
+INSERT INTO category (name) VALUES ('Mystery');
+
+CREATE TABLE film_category (
+  film_id      SMALLINT   UNSIGNED NOT NULL,
+  category_id  TINYINT    UNSIGNED NOT NULL,
+  last_update  TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (film_id, category_id),
+  CONSTRAINT fk_film_category_film FOREIGN KEY (film_id) REFERENCES film (film_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_film_category_category FOREIGN KEY (category_id) REFERENCES category (category_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO film_category (film_id, category_id) VALUES (1, 1);
+INSERT INTO film_category (film_id, category_id) VALUES (2, 2);
+INSERT INTO film_category (film_id, category_id) VALUES (3, 3);
+INSERT INTO film_category (film_id, category_id) VALUES (4, 4);
+INSERT INTO film_category (film_id, category_id) VALUES (5, 5);
+INSERT INTO film_category (film_id, category_id) VALUES (6, 6);
+INSERT INTO film_category (film_id, category_id) VALUES (7, 7);
+INSERT INTO film_category (film_id, category_id) VALUES (8, 8);
+INSERT INTO film_category (film_id, category_id) VALUES (9, 9);
+INSERT INTO film_category (film_id, category_id) VALUES (10, 10);
+
+CREATE TABLE film_text (
+  film_id      SMALLINT      NOT NULL,
+  title        VARCHAR(255)  NOT NULL,
+  description  TEXT,
+  PRIMARY KEY  (film_id),
+  FULLTEXT KEY idx_title_description (title, description)
+     -- To build index on FULLTEXT to facilitate text search
+     -- FULLTEXT is supported in MyISAM engine, NOT in InnoDB engine
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+INSERT INTO film_text (film_id, title, description) VALUES (1, 'The Matrix', 'A mind-bending sci-fi thriller');
+INSERT INTO film_text (film_id, title, description) VALUES (2, 'Inception', 'Dreams within dreams');
+INSERT INTO film_text (film_id, title, description) VALUES (3, 'Pulp Fiction', 'Quentin Tarantino classic');
+INSERT INTO film_text (film_id, title, description) VALUES (4, 'Titanic', 'Epic romance and tragedy');
+INSERT INTO film_text (film_id, title, description) VALUES (5, 'Jurassic Park', 'Dinosaurs on the loose');
+INSERT INTO film_text (film_id, title, description) VALUES (6, 'Avatar', 'Visually stunning sci-fi adventure');
+INSERT INTO film_text (film_id, title, description) VALUES (7, 'Forrest Gump', 'Life is like a box of chocolates');
+INSERT INTO film_text (film_id, title, description) VALUES (8, 'The Dark Knight', 'Gotham\'s vigilante hero');
+INSERT INTO film_text (film_id, title, description) VALUES (9, 'Gladiator', 'Ancient Rome epic');
+INSERT INTO film_text (film_id, title, description) VALUES (10, 'Braveheart', 'Scottish warrior fights for freedom');
+
+CREATE TABLE inventory (
+  inventory_id  MEDIUMINT  UNSIGNED NOT NULL AUTO_INCREMENT,
+                           -- Simpler to use INT UNSIGNED
+  film_id       SMALLINT   UNSIGNED NOT NULL,
+  store_id      TINYINT    UNSIGNED NOT NULL,
+  last_update   TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (inventory_id),
+  KEY idx_fk_film_id (film_id),
+  KEY idx_store_id_film_id (store_id, film_id),
+  CONSTRAINT fk_inventory_store FOREIGN KEY (store_id) REFERENCES store (store_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_inventory_film FOREIGN KEY (film_id) REFERENCES film (film_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO inventory (film_id, store_id) VALUES (1, 1);
+INSERT INTO inventory (film_id, store_id) VALUES (2, 2);
+INSERT INTO inventory (film_id, store_id) VALUES (3, 1);
+INSERT INTO inventory (film_id, store_id) VALUES (4, 3);
+INSERT INTO inventory (film_id, store_id) VALUES (5, 2);
+INSERT INTO inventory (film_id, store_id) VALUES (6, 1);
+INSERT INTO inventory (film_id, store_id) VALUES (7, 3);
+INSERT INTO inventory (film_id, store_id) VALUES (8, 2);
+INSERT INTO inventory (film_id, store_id) VALUES (9, 1);
+INSERT INTO inventory (film_id, store_id) VALUES (10, 3);
+
+CREATE TABLE store (
+  store_id          TINYINT    UNSIGNED NOT NULL AUTO_INCREMENT,
+  manager_staff_id  TINYINT    UNSIGNED NOT NULL,
+  address_id        SMALLINT   UNSIGNED NOT NULL,
+  last_update       TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (store_id),
+  UNIQUE KEY idx_unique_manager (manager_staff_id),  -- one manager manages only one store
+  KEY idx_fk_address_id (address_id),
+  CONSTRAINT fk_store_staff FOREIGN KEY (manager_staff_id) REFERENCES staff (staff_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_store_address FOREIGN KEY (address_id) REFERENCES address (address_id) 
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO store (manager_staff_id, address_id) VALUES (1, 1);
+INSERT INTO store (manager_staff_id, address_id) VALUES (2, 2);
+INSERT INTO store (manager_staff_id, address_id) VALUES (3, 1);
+INSERT INTO store (manager_staff_id, address_id) VALUES (4, 3);
+INSERT INTO store (manager_staff_id, address_id) VALUES (5, 2);
+INSERT INTO store (manager_staff_id, address_id) VALUES (6, 1);
+INSERT INTO store (manager_staff_id, address_id) VALUES (7, 3);
+INSERT INTO store (manager_staff_id, address_id) VALUES (8, 2);
+INSERT INTO store (manager_staff_id, address_id) VALUES (9, 1);
+INSERT INTO store (manager_staff_id, address_id) VALUES (10, 3);
+
+CREATE TABLE staff (
+  staff_id     TINYINT     UNSIGNED NOT NULL AUTO_INCREMENT,
+  first_name   VARCHAR(45) NOT NULL,
+  last_name    VARCHAR(45) NOT NULL,
+  address_id   SMALLINT    UNSIGNED NOT NULL,
+  picture      BLOB        DEFAULT NULL,           -- Kept a picture as BLOB (up to 64KB)
+  email        VARCHAR(50) DEFAULT NULL,
+  store_id     TINYINT     UNSIGNED NOT NULL,
+  active       BOOLEAN     NOT NULL DEFAULT TRUE,  -- BOOLEAN FALSE (0) TRUE (non-0)
+  username     VARCHAR(16) NOT NULL,
+  password     VARCHAR(40) BINARY DEFAULT NULL,    -- BINARY??
+  last_update  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (staff_id),
+  KEY idx_fk_store_id (store_id),
+  KEY idx_fk_address_id (address_id),
+    CONSTRAINT fk_staff_store FOREIGN KEY (store_id) REFERENCES store (store_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_staff_address FOREIGN KEY (address_id) REFERENCES address (address_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO staff (first_name, last_name, address_id, email, store_id, active, username, password)
+VALUES
+  ('John', 'Doe', 1, 'john.doe@example.com',  1,TRUE, 'johndoe', 'hashed_password1'),
+  ('Jane', 'Smith', 2, 'jane.smith@example.com', 2, TRUE, 'janesmith', 'hashed_password2'),
+  ('Michael', 'Johnson', 1, 'michael.johnson@example.com', 1, TRUE, 'mjohnson', 'hashed_password3'),
+  ('Emily', 'Brown', 3, 'emily.brown@example.com', 3, TRUE, 'ebrown', 'hashed_password4'),
+  ('David', 'Lee', 2, 'david.lee@example.com', 2, TRUE, 'dlee', 'hashed_password5'),
+  ('Sarah', 'Garcia', 1, 'sarah.garcia@example.com', 1, TRUE, 'sgarcia', 'hashed_password6'),
+  ('Robert', 'Hall', 3, 'robert.hall@example.com', 3, TRUE, 'rhall', 'hashed_password7'),
+  ('Jennifer', 'Clark', 2, 'jennifer.clark@example.com', 2, TRUE, 'jclark', 'hashed_password8'),
+  ('Daniel', 'Adams', 1, 'daniel.adams@example.com', 1, TRUE, 'dadams', 'hashed_password9'),
+  ('Linda', 'Martinez', 3, 'linda.martinez@example.com', 3, TRUE, 'lmartinez', 'hashed_password10');
+
+CREATE TABLE customer (
+  customer_id  SMALLINT    UNSIGNED NOT NULL AUTO_INCREMENT,
+  store_id     TINYINT     UNSIGNED NOT NULL,
+  first_name   VARCHAR(45) NOT NULL,
+  last_name    VARCHAR(45) NOT NULL,
+  email        VARCHAR(50) DEFAULT NULL,
+  address_id   SMALLINT    UNSIGNED NOT NULL,
+  active       BOOLEAN     NOT NULL DEFAULT TRUE,
+  create_date  DATETIME    NOT NULL,
+  last_update  TIMESTAMP   DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (customer_id),
+  KEY idx_fk_store_id (store_id),
+  KEY idx_fk_address_id (address_id),
+  KEY idx_last_name (last_name),
+  CONSTRAINT fk_customer_address FOREIGN KEY (address_id) REFERENCES address (address_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_customer_store FOREIGN KEY (store_id) REFERENCES store (store_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO customer (store_id, first_name, last_name, email, address_id, active, create_date)
+VALUES
+  (1, 'John', 'Doe', 'john.doe@example.com',1, TRUE, '2023-07-07 10:00:00'),
+  (2, 'Jane', 'Smith', 'jane.smith@example.com',2, TRUE, '2023-04-04 11:00:00'),
+  (3, 'Mani', 'Due', 'mani.due@example.com', TRUE,3, '2023-09-08 12:00:00'),
+  (4, 'ishu', 'Smooth', 'ishu.smooth@example.com',4, TRUE, '2023-06-09 13:00:00'),
+  (5, 'himmi', 'hua', 'himmi.hua@example.com',5, TRUE, '2023-01-07 14:00:00'),
+  (6, 'Karan', 'pra', 'karan.pra@example.com',6, TRUE, '2023-01-10 15:00:00'),
+  (7, 'Komal', 'Dua', 'komal.dua@example.com',7, TRUE, '2023-09-04 16:00:00'),
+  (8, 'Anshika', 'kumar', 'anshika.kumar@example.com',8, TRUE, '2023-04-08 17:00:00'),
+  (9, 'aman', 'jangra', 'aman.jangra@example.com',9, TRUE, '2023-04-08 18:00:00'),
+  (10, 'khushi', 'Yadav', 'khushi.yadav@example.com',10, TRUE, '2023-02-05 19:00:00');
+
+CREATE TABLE rental (
+  rental_id     INT        NOT NULL AUTO_INCREMENT,
+  rental_date   DATETIME   NOT NULL,
+  inventory_id  MEDIUMINT  UNSIGNED NOT NULL,
+  customer_id   SMALLINT   UNSIGNED NOT NULL,
+  return_date   DATETIME   DEFAULT NULL,
+  staff_id      TINYINT    UNSIGNED NOT NULL,
+  last_update   TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (rental_id),
+  UNIQUE KEY  (rental_date, inventory_id, customer_id),
+  KEY idx_fk_inventory_id (inventory_id),
+  KEY idx_fk_customer_id (customer_id),
+  KEY idx_fk_staff_id (staff_id),
+  CONSTRAINT fk_rental_staff FOREIGN KEY (staff_id) REFERENCES staff (staff_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_rental_inventory FOREIGN KEY (inventory_id) REFERENCES inventory (inventory_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_rental_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO rental (rental_date, inventory_id,customer_id, return_date,staff_id)
+VALUES
+  ('2023-01-01 10:30:00', 1,1, '2023-01-02 12:00:00',1),
+  ('2023-01-02 11:30:00', 2,2, '2023-01-03 13:00:00',2),
+  ('2023-01-01 10:30:00', 1,3, '2023-01-02 12:00:00',3),
+  ('2023-01-02 11:30:00', 2,4, '2023-01-03 13:00:00',4),
+  ('2023-01-01 10:30:00', 1,5, '2023-01-02 12:00:00',5),
+  ('2023-01-02 11:30:00', 2,6, '2023-01-03 13:00:00',6),
+  ('2023-01-01 10:30:00', 1,7, '2023-01-02 12:00:00',7),
+  ('2023-01-02 11:30:00', 2,8, '2023-01-03 13:00:00',8),
+  ('2023-01-01 10:30:00', 1,9, '2023-01-02 12:00:00',9),
+  ('2023-01-02 11:30:00', 2,10, '2023-01-03 13:00:00',10);
+
+CREATE TABLE payment (
+  payment_id    SMALLINT     UNSIGNED NOT NULL AUTO_INCREMENT,
+  customer_id   SMALLINT     UNSIGNED NOT NULL,
+  staff_id      TINYINT      UNSIGNED NOT NULL,
+  rental_id     INT          DEFAULT NULL,
+  amount        DECIMAL(5,2) NOT NULL,
+  payment_date  DATETIME     NOT NULL,
+  last_update   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (payment_id),
+  KEY idx_fk_staff_id (staff_id),
+  KEY idx_fk_customer_id (customer_id),
+  CONSTRAINT fk_payment_rental FOREIGN KEY (rental_id) REFERENCES rental (rental_id)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_payment_customer FOREIGN KEY (customer_id) REFERENCES customer (customer_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_payment_staff FOREIGN KEY (staff_id) REFERENCES staff (staff_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO payment (customer_id, staff_id, rental_id, amount, payment_date)
+VALUES
+  (1,1,1, 10.99, '2023-01-02 12:30:00'),
+  (2,2,2, 15.99, '2023-01-03 13:30:00'),
+  (3,3,3, 10.99, '2022-01-05 11:30:00'),
+  (4,4,4, 15.99, '2024-01-09 15:30:00'),
+  (5,5,5, 10.99, '2023-01-02 12:30:00'),
+  (6,6,6, 15.99, '2023-01-03 13:30:00'),
+  (7,7,7, 10.99, '2023-01-02 12:30:00'),
+  (8,8,8, 15.99, '2023-01-03 13:30:00'),
+  (9,9,9, 10.99, '2023-01-02 12:30:00'),
+  (10,10,10, 15.99, '2023-01-03 13:30:00');
+
+CREATE TABLE address (
+  address_id   SMALLINT    UNSIGNED NOT NULL AUTO_INCREMENT,
+  address      VARCHAR(50) NOT NULL,
+  address2     VARCHAR(50) DEFAULT NULL,
+  district     VARCHAR(20) NOT NULL,
+  city_id      SMALLINT    UNSIGNED NOT NULL,
+  postal_code  VARCHAR(10) DEFAULT NULL,
+  phone        VARCHAR(20) NOT NULL,
+  last_update  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (address_id),
+  KEY idx_fk_city_id (city_id),
+  CONSTRAINT `fk_address_city` FOREIGN KEY (city_id) REFERENCES city (city_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO address (address, district, city_id, phone) VALUES ('123 Main St', 'Downtown', 1, '555-1234');
+INSERT INTO address (address, district, city_id, phone) VALUES ('456 Elm St', 'Midtown', 2, '555-5678');
+INSERT INTO address (address, district, city_id, phone) VALUES ('789 Oak Ave', 'Uptown', 3, '555-9876');
+INSERT INTO address (address, district, city_id, phone) VALUES ('101 Maple Rd', 'Suburbia', 4, '555-4321');
+INSERT INTO address (address, district, city_id, phone) VALUES ('222 Pine Ln', 'Rural', 5, '555-6789');
+INSERT INTO address (address, district, city_id, phone) VALUES ('333 Cedar Dr', 'Countryside', 6, '555-2468');
+INSERT INTO address (address, district, city_id, phone) VALUES ('444 Birch Pl', 'Hills', 7, '555-1357');
+INSERT INTO address (address, district, city_id, phone) VALUES ('555 Willow Ct', 'Valley', 8, '555-8642');
+INSERT INTO address (address, district, city_id, phone) VALUES ('666 Oakwood Rd', 'Forest', 9, '555-7531');
+INSERT INTO address (address, district, city_id, phone) VALUES ('777 Elmwood Ave', 'Mountains', 10, '555-3198');
+
+CREATE TABLE city (
+  city_id      SMALLINT    UNSIGNED NOT NULL AUTO_INCREMENT,
+  city         VARCHAR(50) NOT NULL,
+  country_id   SMALLINT    UNSIGNED NOT NULL,
+  last_update  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (city_id),
+  KEY idx_fk_country_id (country_id),
+  CONSTRAINT `fk_city_country` FOREIGN KEY (country_id) REFERENCES country (country_id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO city (city, country_id) VALUES ('New York', 1);
+INSERT INTO city (city, country_id) VALUES ('Toronto', 2);
+INSERT INTO city (city, country_id) VALUES ('London', 3);
+INSERT INTO city (city, country_id) VALUES ('Sydney', 4);
+INSERT INTO city (city, country_id) VALUES ('Berlin', 5);
+INSERT INTO city (city, country_id) VALUES ('Paris', 6);
+INSERT INTO city (city, country_id) VALUES ('Tokyo', 7);
+INSERT INTO city (city, country_id) VALUES ('Sao Paulo', 8);
+INSERT INTO city (city, country_id) VALUES ('Mumbai', 9);
+INSERT INTO city (city, country_id) VALUES ('Beijing', 10);
+
+CREATE TABLE country (
+  country_id   SMALLINT    UNSIGNED NOT NULL AUTO_INCREMENT,
+  country      VARCHAR(50) NOT NULL,
+  last_update  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY  (country_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO country (country) VALUES ('United States');
+INSERT INTO country (country) VALUES ('Canada');
+INSERT INTO country (country) VALUES ('United Kingdom');
+INSERT INTO country (country) VALUES ('Australia');
+INSERT INTO country (country) VALUES ('Germany');
+INSERT INTO country (country) VALUES ('France');
+INSERT INTO country (country) VALUES ('Japan');
+INSERT INTO country (country) VALUES ('Brazil');
+INSERT INTO country (country) VALUES ('India');
+INSERT INTO country (country) VALUES ('China');
+
+CREATE VIEW staff_list
+AS
+SELECT 
+  s.staff_id AS ID,
+  CONCAT(s.first_name, _utf8' ', s.last_name) AS name,
+  a.address AS address,
+  a.postal_code AS `zip code`,
+  a.phone AS phone,
+  city.city AS city,
+  country.country AS country,
+  s.store_id AS SID
+FROM staff AS s 
+  JOIN address AS a ON s.address_id = a.address_id
+  JOIN city ON a.city_id = city.city_id
+  JOIN country ON city.country_id = country.country_id;
+  
+  CREATE VIEW customer_list
+AS
+SELECT 
+  cu.customer_id AS ID,
+  CONCAT(cu.first_name, _utf8' ', cu.last_name) AS name,
+  a.address AS address,
+  a.postal_code AS `zip code`,
+  a.phone AS phone,
+  city.city AS city,
+  country.country AS country,
+  IF(cu.active, _utf8'active', _utf8'') AS notes,
+  cu.store_id AS SID
+FROM customer AS cu 
+  JOIN address AS a ON cu.address_id = a.address_id
+  JOIN city ON a.city_id = city.city_id
+  JOIN country ON city.country_id = country.country_id;
+  
+  CREATE VIEW film_list
+AS
+SELECT 
+  film.film_id AS FID,
+  film.title AS title,
+  film.description AS description,
+  category.name AS category,
+  film.rental_rate AS price,
+  film.length AS length,
+  film.rating AS rating,
+  GROUP_CONCAT(CONCAT(actor.first_name, _utf8' ', actor.last_name) SEPARATOR ', ') AS actors
+FROM category 
+  LEFT JOIN film_category ON category.category_id = film_category.category_id
+  LEFT JOIN film ON film_category.film_id = film.film_id
+  JOIN film_actor ON film.film_id = film_actor.film_id
+  JOIN actor ON film_actor.actor_id = actor.actor_id
+GROUP BY film.film_id;
+
+CREATE VIEW nicer_but_slower_film_list
+AS
+SELECT 
+  film.film_id AS FID,
+  film.title AS title,
+  film.description AS description,
+  category.name AS category,
+  film.rental_rate AS price,
+  film.length AS length,
+  film.rating AS rating,
+  GROUP_CONCAT(
+    CONCAT(
+       CONCAT(UCASE(SUBSTR(actor.first_name, 1, 1)),   -- first_name initial-cap
+              LCASE(SUBSTR(actor.first_name, 2, LENGTH(actor.first_name))),
+       _utf8' ',                                       -- space
+       CONCAT(UCASE(SUBSTR(actor.last_name, 1, 1)),    -- last_name initial-cap
+              LCASE(SUBSTR(actor.last_name, 2, LENGTH(actor.last_name))))))  -- end of outer CONCAT
+    SEPARATOR ', ') AS actors
+FROM category 
+  LEFT JOIN film_category ON category.category_id = film_category.category_id 
+  LEFT JOIN film ON film_category.film_id = film.film_id
+  JOIN film_actor ON film.film_id = film_actor.film_id
+  JOIN actor ON film_actor.actor_id = actor.actor_id
+GROUP BY film.film_id;
+
+CREATE VIEW sales_by_store
+AS
+SELECT
+  CONCAT(c.city, _utf8',', cy.country) AS store,
+  CONCAT(m.first_name, _utf8' ', m.last_name) AS manager,
+  SUM(p.amount) AS total_sales
+FROM payment AS p
+  INNER JOIN rental AS r ON p.rental_id = r.rental_id
+  INNER JOIN inventory AS i ON r.inventory_id = i.inventory_id
+  INNER JOIN store AS s ON i.store_id = s.store_id
+  INNER JOIN address AS a ON s.address_id = a.address_id
+  INNER JOIN city AS c ON a.city_id = c.city_id
+  INNER JOIN country AS cy ON c.country_id = cy.country_id
+  INNER JOIN staff AS m ON s.manager_staff_id = m.staff_id
+GROUP BY s.store_id
+ORDER BY cy.country, c.city;
+
+CREATE VIEW sales_by_film_category
+AS
+SELECT
+  c.name AS category,
+  SUM(p.amount) AS total_sales
+FROM payment AS p
+  INNER JOIN rental AS r ON p.rental_id = r.rental_id
+  INNER JOIN inventory AS i ON r.inventory_id = i.inventory_id
+  INNER JOIN film AS f ON i.film_id = f.film_id
+  INNER JOIN film_category AS fc ON f.film_id = fc.film_id
+  INNER JOIN category AS c ON fc.category_id = c.category_id
+GROUP BY c.name
+ORDER BY total_sales DESC;
+
+CREATE VIEW actor_info
+AS
+SELECT
+  a.actor_id,
+  a.first_name,
+  a.last_name,
+  GROUP_CONCAT(
+     DISTINCT
+     CONCAT(c.name, ': ',
+        (SELECT 
+           GROUP_CONCAT(f.title ORDER BY f.title SEPARATOR ', ')
+           FROM samplesalika.film f
+           INNER JOIN samplesalika.film_category fc ON f.film_id = fc.film_id
+           INNER JOIN samplesalika.film_actor fa ON f.film_id = fa.film_id
+           WHERE fc.category_id = c.category_id AND fa.actor_id = a.actor_id)
+        )  -- end CONCAT
+     ORDER BY c.name
+     SEPARATOR '; ') AS film_info
+FROM samplesalika.actor a
+LEFT JOIN samplesalika.film_actor fa ON a.actor_id = fa.actor_id
+LEFT JOIN samplesalika.film_category fc ON fa.film_id = fc.film_id
+LEFT JOIN samplesalika.category c ON fc.category_id = c.category_id
+GROUP BY
+  a.actor_id,
+  a.first_name,
+  a.last_name;
+  
+DELIMITER //
+ 
+CREATE PROCEDURE rewards_report (
+   IN min_monthly_purchases TINYINT UNSIGNED,              -- min number of purchases
+   IN min_dollar_amount_purchased DECIMAL(10,2) UNSIGNED,  -- min dollar amount purchased
+   OUT count_rewardees INT                                 -- number of customers to be rewarded
+)
+LANGUAGE SQL
+NOT DETERMINISTIC
+READS SQL DATA
+SQL SECURITY DEFINER
+COMMENT 'Provides a customizable report on best customers'
+ 
+proc: BEGIN
+   DECLARE last_month_start DATE;
+   DECLARE last_month_end DATE;
+
+   /* Some sanity checks... */
+   IF min_monthly_purchases = 0 THEN
+      SELECT 'Minimum monthly purchases parameter must be > 0';
+      LEAVE proc;
+   END IF;
+   IF min_dollar_amount_purchased = 0.00 THEN
+      SELECT 'Minimum monthly dollar amount purchased parameter must be > $0.00';
+      LEAVE proc;
+   END IF;
+ 
+   /* Determine start and end time periods */
+   SET last_month_start = DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH);
+   SET last_month_start = STR_TO_DATE(
+                             CONCAT(YEAR(last_month_start), '-', MONTH(last_month_start), '-01'),
+                             '%Y-%m-%d');
+   SET last_month_end = LAST_DAY(last_month_start);
+
+   /* Create a temporary storage area for Customer IDs */
+   CREATE TEMPORARY TABLE tmpCustomer (customer_id SMALLINT UNSIGNED NOT NULL PRIMARY KEY);
+
+   /* Find all customers meeting the monthly purchase requirements */
+   INSERT INTO tmpCustomer (customer_id)
+     SELECT p.customer_id
+     FROM payment AS p
+     WHERE DATE(p.payment_date) BETWEEN last_month_start AND last_month_end
+     GROUP BY customer_id
+     HAVING 
+       SUM(p.amount) > min_dollar_amount_purchased
+       AND COUNT(customer_id) > min_monthly_purchases;
+
+   /* Populate OUT parameter with count of found customers */
+   SELECT COUNT(*) FROM tmpCustomer INTO count_rewardees;
+
+   /* Output ALL customer information of matching rewardees.
+      Customize output as needed. */
+   SELECT c.*
+     FROM tmpCustomer AS t
+     INNER JOIN customer AS c ON t.customer_id = c.customer_id;
+
+   /* Clean up */
+   DROP TABLE tmpCustomer;
+END //
+ 
+-- Change the MySQL delimiter back to ';'
+DELIMITER ;
+
+DELIMITER $$
+ 
+CREATE FUNCTION get_customer_balance(p_customer_id INT, p_effective_date DATETIME) RETURNS DECIMAL(5,2)
+   DETERMINISTIC
+   READS SQL DATA
+BEGIN
+   # OK, WE NEED TO CALCULATE THE CURRENT BALANCE GIVEN A CUSTOMER_ID AND A DATE
+   # THAT WE WANT THE BALANCE TO BE EFFECTIVE FOR. THE BALANCE IS:
+   #   1) RENTAL FEES FOR ALL PREVIOUS RENTALS
+   #   2) ONE DOLLAR FOR EVERY DAY THE PREVIOUS RENTALS ARE OVERDUE
+   #   3) IF A FILM IS MORE THAN RENTAL_DURATION * 2 OVERDUE, CHARGE THE REPLACEMENT_COST
+   #   4) SUBTRACT ALL PAYMENTS MADE BEFORE THE DATE SPECIFIED
+
+   DECLARE v_rentfees DECIMAL(5,2);  # FEES PAID TO RENT THE VIDEOS INITIALLY
+   DECLARE v_overfees INTEGER;       # LATE FEES FOR PRIOR RENTALS
+   DECLARE v_payments DECIMAL(5,2);  # SUM OF PAYMENTS MADE PREVIOUSLY
+
+   SELECT IFNULL(SUM(film.rental_rate), 0) INTO v_rentfees
+     FROM film, inventory, rental
+     WHERE film.film_id = inventory.film_id
+      AND inventory.inventory_id = rental.inventory_id
+      AND rental.rental_date <= p_effective_date
+      AND rental.customer_id = p_customer_id;
+ 
+   SELECT IFNULL(
+             SUM(
+                IF((TO_DAYS(rental.return_date) - TO_DAYS(rental.rental_date)) > film.rental_duration,
+                   ((TO_DAYS(rental.return_date) - TO_DAYS(rental.rental_date)) - film.rental_duration), 0)),
+             0)
+          INTO v_overfees
+   FROM rental, inventory, film
+   WHERE film.film_id = inventory.film_id
+      AND inventory.inventory_id = rental.inventory_id
+      AND rental.rental_date <= p_effective_date
+      AND rental.customer_id = p_customer_id;
+ 
+   SELECT IFNULL(SUM(payment.amount), 0) INTO v_payments
+   FROM payment
+   WHERE payment.payment_date <= p_effective_date
+      AND payment.customer_id = p_customer_id;
+ 
+   RETURN v_rentfees + v_overfees - v_payments;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+-- Given the film_id and store_id, find the film count
+CREATE PROCEDURE film_in_stock(
+   IN  p_film_id INT,
+   IN  p_store_id INT,
+   OUT p_film_count INT)
+READS SQL DATA
+BEGIN
+   SELECT inventory_id
+     FROM inventory
+     WHERE film_id = p_film_id
+       AND store_id = p_store_id
+       AND inventory_in_stock(inventory_id);
+ 
+   SELECT FOUND_ROWS() INTO p_film_count;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE film_not_in_stock(IN p_film_id INT, IN p_store_id INT, OUT p_film_count INT)
+READS SQL DATA
+BEGIN
+   SELECT inventory_id
+   FROM inventory
+   WHERE film_id = p_film_id
+   AND store_id = p_store_id
+   AND NOT inventory_in_stock(inventory_id);
+ 
+   SELECT FOUND_ROWS() INTO p_film_count;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE FUNCTION inventory_held_by_customer(p_inventory_id INT) RETURNS INT
+READS SQL DATA
+BEGIN
+   DECLARE v_customer_id INT;
+   DECLARE EXIT HANDLER FOR NOT FOUND RETURN NULL;
+
+   SELECT customer_id INTO v_customer_id
+   FROM rental
+   WHERE return_date IS NULL AND inventory_id = p_inventory_id;
+
+   RETURN v_customer_id;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE FUNCTION inventory_in_stock(p_inventory_id INT) RETURNS BOOLEAN
+READS SQL DATA
+BEGIN
+   DECLARE v_rentals INT;
+   DECLARE v_out     INT;
+
+   # AN ITEM IS IN-STOCK IF THERE ARE EITHER NO ROWS IN THE rental TABLE
+   # FOR THE ITEM OR ALL ROWS HAVE return_date POPULATED
+   SELECT COUNT(*) INTO v_rentals
+   FROM rental
+   WHERE inventory_id = p_inventory_id;
+ 
+   IF v_rentals = 0 THEN
+      RETURN TRUE;
+   END IF;
+ 
+   SELECT COUNT(rental_id) INTO v_out
+   FROM inventory LEFT JOIN rental USING(inventory_id)
+   WHERE inventory.inventory_id = p_inventory_id AND rental.return_date IS NULL;
+ 
+   IF v_out > 0 THEN
+      RETURN FALSE;
+   ELSE
+      RETURN TRUE;
+   END IF;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+-- Trigger for INSERT INTO film table
+-- Copy information to film_text table
+CREATE TRIGGER `ins_film` AFTER INSERT ON `film` FOR EACH ROW 
+BEGIN
+   INSERT INTO film_text (film_id, title, description)
+      VALUES (new.film_id, new.title, new.description);
+END$$
+DELIMITER ;
+
+-- Trigger for UPDATE film table
+-- Update the film_text table
+DELIMITER $$
+CREATE TRIGGER `upd_film` AFTER UPDATE ON `film` FOR EACH ROW 
+BEGIN
+   IF (old.title != new.title) or (old.description != new.description)
+   THEN
+      UPDATE film_text
+      SET title=new.title,
+          description=new.description,
+          film_id=new.film_id
+      WHERE film_id=old.film_id;
+   END IF;
+END$$
+DELIMITER ;
+
+-- Trigger for DELECT FROM film table
+-- DELETE from film_text table as well
+DELIMITER $$
+CREATE TRIGGER `del_film` AFTER DELETE ON `film` FOR EACH ROW 
+BEGIN
+   DELETE FROM film_text WHERE film_id = old.film_id;
+END$$
+DELIMITER ;
+
+--  query 1
+SELECT film.title
+FROM film
+JOIN film_category ON film.film_id = film_category.film_id
+JOIN category ON film_category.category_id = category.category_id
+WHERE category.name = 'Action';
+
+-- Query 2
+SELECT actor.first_name,actor.last_name,film.title as Film_name
+FROM actor
+JOIN film_actor ON actor.actor_id = film_actor.actor_id
+JOIN film ON film_actor.film_id = film.film_id
+WHERE film.title = 'Titanic';
+
+--  Query 3
+SELECT customer.customer_id, customer.first_name, customer.last_name, COUNT(rental.rental_id) AS total_rentals
+FROM customer
+JOIN rental ON customer.customer_id = rental.customer_id
+GROUP BY customer.customer_id;
+
+-- Query 4
+SELECT film.title, rental.rental_date, rental.return_date
+FROM rental
+JOIN inventory ON rental.inventory_id = inventory.inventory_id
+JOIN film ON inventory.film_id = film.film_id
+WHERE rental.customer_id = 1;
