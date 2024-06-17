@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+ <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,14 +19,14 @@
         form {
             max-width: 400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 40px;
             background-color: #fff;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 1px;
             font-weight: bold;
         }
          input[type="text"],
@@ -34,10 +34,10 @@
         input[type="email"],
         textarea {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
-            border-radius: 3px;
+            border-radius: 1px;
         }
         input[type="submit"] {
             background-color: #0074d9;
@@ -74,8 +74,11 @@
         <textarea id="address" name="address" rows="4" cols="50"></textarea><br>
 
         <!-- Add other registration fields as needed -->
-
         <input type="submit" value="Register">
+        <br>
+        <p>Already have an account? <a href="login">Login here</a></p>
+   
+    </form>
     </form>
 </body>
 </html>

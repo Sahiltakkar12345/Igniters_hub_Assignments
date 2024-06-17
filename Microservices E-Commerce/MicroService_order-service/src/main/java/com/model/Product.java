@@ -23,10 +23,11 @@ public class Product {
 	
     @Id
     private int id;
+  
     private String name;
     private String description;
     private BigDecimal price;
- // private int oid;
+ 
 	public int getId() {
 		return id;
 	}
@@ -36,9 +37,7 @@ public class Product {
 	public String getName() {
 		return name;
 	}
-	public void setName(String name) {
-		this.name = name;
-	}
+
 	public String getDescription() {
 		return description;
 	}
@@ -51,19 +50,13 @@ public class Product {
 	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
-//	public int getOid() {
-//		return oid;
-//	}
-//	public void setOid(int oid) {
-//		this.oid = oid;
-//	}
+
 	public Product(int id, String name, String description, BigDecimal price) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.description = description;
 		this.price = price;
-//		this.oid = oid;
 	}
 	public Product() {
 		super();

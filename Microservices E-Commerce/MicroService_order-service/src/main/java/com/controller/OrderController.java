@@ -10,12 +10,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import lombok.RequiredArgsConstructor;
 
 
 import com.model.Order;
 import com.model.User;
+import com.model.Product;
 import com.repository.OrderRepository;
 import com.repository.UserRepository;
 import com.service.OrderService;
@@ -35,10 +37,8 @@ public class OrderController {
 	
 	@Autowired
 	private UserRepository userRepository;
-    
-	  @GetMapping("/index") 
-	  public String index() {
-	  return "index"; }
+	
+
 	  
 	  @GetMapping("/login") 
 	  public String Login() {
@@ -80,11 +80,13 @@ public class OrderController {
 	        if (user != null && user.getPassword().equals(password)) {
 	            // Valid credentials
 	            session.setAttribute("user", user); // Store user in session (optional)
-	            return "dashboard"; // Redirect to dashboard page
+	            List<Order> orders = orderService.getAll();
+	  	      model.addAttribute("orders", orders);
+	            return "ViewDetails"; 
 	        } else {
 	            // Invalid credentials
 	            model.addAttribute("loginError", "Invalid email or password");
-	            return "index"; // Redirect back to login page with error message
+	            return "login"; // Redirect back to login page with error message
 	        }
 	    }
 	  
@@ -101,7 +103,8 @@ public class OrderController {
 	         order.setName(name);
 	         order.setAddress(address);
 	         orderRepo.save(order);
-	         return "dashboard";
+	       //  return "dashboard";
+	         return "ViewDetails";
 	    }	  
 	
 
@@ -132,7 +135,7 @@ public class OrderController {
 
 
 	  @PostMapping("/UpdateOrder")
-	  public String updateOrder(@RequestParam(value = "oid", required = false) Integer oid,
+	  public String updateOrder(@RequestParam(value = "oid") Integer oid,
 	                           @RequestParam("name") String name,
 	                           @RequestParam("address") String address,
 	                           ModelMap model) {
@@ -143,26 +146,45 @@ public class OrderController {
 	          existingOrder.setAddress(address);
 	          orderRepo.save(existingOrder);
 	          model.addAttribute("order", existingOrder);
-	          return "UpdateOrder"; // Redirect to the orders listing page
+	          List<Order> orders = orderService.getAll();
+		      model.addAttribute("orders", orders);
+	          return "ViewDetails"; // Redirect to the orders listing page
 	      } else {
 	          // Handle the case when oid is not provided (e.g., show an error page)
 	          return "errorPage"; // Adjust this to your actual error page
 	      }
 	  }
+	  @PostMapping("/editOrder{oid}") 
+		  public String editOrder(@PathVariable("oid") Integer id,ModelMap model) {
+		  Optional<Order> orderOptional = orderRepo.findById(id);
+          Order order = orderOptional.get();
+          model.addAttribute("order", order);
+		  return "editOrder";}
 
+	
 	  @GetMapping("/SearchforDelete") 
 	  public String SearchforDelete() {
 	  return "SearchforDelete"; }
 
-	  @PostMapping("/DeleteOrder") 
-	  public String deleteOrder(@RequestParam(value = "oid") Integer id) {
+	  @GetMapping("/DeleteOrder{oid}") 
+	  public String deleteOrder(@PathVariable("oid") Integer id, Model model) {
 	  orderRepo.deleteById(id); 
-	  return "dashboard";}
-	  
-
-	 
-
+	  List<Order> orders = orderService.getAll();
+      model.addAttribute("orders", orders);
+	  return "ViewDetails";}
+	  	  
+	  @GetMapping("/editProduct{id}") 
+	  public String editProduct(@PathVariable("id") Integer id,ModelMap model) {
+	  return "redirect:http://localhost:8081/api/product/editProduct{id}";}
 	
+	  @GetMapping("/getProduct") 
+	  public String editProducts() {
+	  return "redirect:http://localhost:8081/api/product/";}
+	
+	  @GetMapping("/ListAllProducts") 
+	  public String ListAllProducts() {
+	  return "redirect:http://localhost:8081/api/product/ListAllProducts";}
+
 // this is working in postman	  
 
 	    @GetMapping("/{oid}") 

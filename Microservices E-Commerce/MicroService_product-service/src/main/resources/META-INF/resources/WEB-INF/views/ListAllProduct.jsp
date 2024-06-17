@@ -1,17 +1,17 @@
- <%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@page import="com.model.Product"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details</title>
-         <link rel="stylesheet"
+     <link rel="stylesheet"
         href=
 "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
- 
- 
-     .btn {
+    
+   
+        .btn {
             background-color: sky;
             border: 0px;
             padding: 12px 16px;
@@ -20,50 +20,46 @@
           .btn:hover {
             background-color: ;
         }
-    
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f8f8;
             margin: 0;
             padding: 0;
-             display: flex;
         }
         h1 {
             color: #333;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 20px;
         }
         table {
-        width: 90%;
-            margin: 5px auto;
+        width: 80%;
+            margin: 20px auto;
             border-collapse: collapse;
         }
-         .split right {
-    	margin-top: 20px;
-  		}
-  		table, th, td {
-  border: 0;
-}
         th, td {
-            padding: 8px;
-        /*     border: 1px solid #ccc; */
+            padding: 0px;
+            border: 1px solid #ccc;
             text-align: center;
         }
-         tr:nth-child(even) {
-            background-color: #e0ebe3;
+        th {
+            background-color: #f2f2f2;
+            color: sky;
+ 			padding: 8px;
+  			text-align: center;
+        }
+        table, th, td {
+ 		 border: 0;
+		}
+        tr:nth-child(even) {
+            background-color: #f8f8f8;
         }
         tr:nth-child(odd) {
  		 background-color: #ffffff;
 		}
-        th {
-            background-color: #f2f2f2;
-        }
-  
         p {
             margin: 5px 0;
         }
-
-  .sidenav {
+        .sidenav {
             height: 100%; /* 100% Full-height */
             width: 250px; /* Set the width of the side navigation */
             position: fixed; /* Stay in place */
@@ -72,7 +68,7 @@
             left: 0; /* Position on the left side */
             background-color: sky ; /* Black background */
             overflow-x: hidden; /* Disable horizontal scroll */
-            padding-top: 50px; /* Place content 60px from the top */
+            padding-top: 60px; /* Place content 60px from the top */
             transition: 0.5s; /* Transition effect to slide in the sidenav */
         }
   .sidenav a {
@@ -113,31 +109,31 @@
         .left {
             left: 0;
             background-color: #374957;
-             width: 200px;
-   			 height: 100vh;
-    		overflow: auto;
-    		padding-top: 20px;
         }
 
         /* Control the right side (data) */
         .right {
             right: 0;
               width: 90%; 
-            background-color: #f8f8f8;
+            background-color: sky;
         }        
+        img
+        {
+        	height:40px;
+        	width:60px;
+        }
         
         
         
         
         
         
-        
-        /* Dropdown Button */
+              
+       /* Dropdown Button */
 .dropbtn {
-   /*  background-color: sky;
-    color: White;
-    */
-     padding: 16px;
+  /*   background-color: sky;
+    color: White; */
+    padding: 16px;
     font-size: 18px;
     border: none;
 }
@@ -182,62 +178,65 @@
 .dropdown:hover .dropbtn {
     background-color: sky;
 }
-        
-        
-        
-    </style>
-   <!-- Add any necessary CSS or other resources here -->
+/* .dropbtn:after {
+    content: "	↓";
+}
 
-</head>
+    */     
+    </style>
+     
+  
+             
+    </head>
 <body>
+<div class="navbar">
 <div class="split left">
 <div id="mySidenav" class="sidenav">
 
 <div class="dropdown">
     <button class="dropbtn">Orders</button>
     <div class="dropdown-content">
-        <a href="OrderRegistration">Add Order</a>
-        <a href="SearchforView">Search By Id</a>
-        <a href="ViewAllOrders">ViewAllOrder</a>
+        <a href="BacktoOrders">ViewAllOrder</a>
     </div>
 </div><br>
 <div class="dropdown">
     <button class="dropbtn">Products</button>
     <div class="dropdown-content">
-        <a href="ListAllProducts">ViewAllProduct</a>
+     <a href="AddNewProduct">Add Product</a>
+        <a href="ListAllProducts">View All Product</a>
     </div>
 </div>
+</div>
 
-
-
-
+  
 </div></div>
-<div class=main-content>
    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+ <div class="main-content">
    <div class="split right">
-<table border="1">
+   <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+    <!--  <form action="BacktoOrders" style="float: left;">
+    <button type="submit">Back to Order Details</button>
+   </form>
+     <form action="AddNewProduct" style="margin-top:1px;  float: right;">
+    <button type="submit">Add New Product</button>
+   </form> -->
+<table border="">
     <tr>
-        <th>Order ID</th>
+        <th>Product ID</th>
+<!--         <th>Image</th> -->
         <th>Name</th>
-        <th>Address</th>
-        <th>Products</th>
+        <th>Description</th>
+        <th>Price</th>
   		<th>operations</th>
     </tr>
-    <c:forEach items="${requestScope.orders}" var="order">
+    <c:forEach items="${requestScope.product}" var="product">
         <tr>
-            <td><c:out value="${order.getId()}" /></td>
-            <td><c:out value="${order.getName()}" /></td>
-            <td><c:out value="${order.getAddress()}" /></td>
-            <td>
-            <c:forEach items="${order.products}" var="product">
-         <a href="editProduct${product.id}" >
-         			<p>Product Id: <c:out value="${product.id}" /></p> </a>
-                    <p>Name: <c:out value="${product.name}" /></p>
-                    <p>Description: <c:out value="${product.description}" /></p>
-                    <p>Price: <c:out value="${product.price}" /></p>
-                    <br/>
-            </c:forEach>
-            </td>
+            <td><c:out value="${product.getId()}" /></td>
+    <%--         <td><img src="${product.getImage()}"></td> 
+          <%--   <td><img src="data:image/jpg;base64,${product.getImageBase64()}"></td> --%>
+            <td><c:out value="${product.getName()}" /></td>
+            <td><c:out value="${product.getDescription()}" /></td>
+            <td><c:out value="${product.getPrice()}" /></td>        
             <td>
       <div>         
     <form action="editOrder${order.id}" method="post" >
@@ -257,6 +256,8 @@
       }
   </script>
 	</form>
+	
+	
   </div>              
             </td>
         </tr>
@@ -265,4 +266,3 @@
 </div></div>
 </body>
 </html>
- 

@@ -1,10 +1,13 @@
 package com.model;
 
+import java.beans.Transient;
 import java.math.BigDecimal;
+import java.util.Base64;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -33,6 +36,7 @@ public class Product {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public String getDescription() {
 		return description;
 	}
@@ -67,6 +71,6 @@ public class Product {
 	public Product() {
 		super();
 	}
-    
-      
+
+
 }

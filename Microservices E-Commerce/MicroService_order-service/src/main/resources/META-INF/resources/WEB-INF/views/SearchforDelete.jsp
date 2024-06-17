@@ -11,6 +11,7 @@
             margin: 0;
             padding: 0;
         }
+        
         h1 {
             color: #333;
             text-align: center;
@@ -19,9 +20,9 @@
         form {
             max-width: 400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 40px;
             background-color: #fff;
-            border-radius: 5px;
+            border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         label {
@@ -48,10 +49,11 @@
             background-color: #0056b3;
         }
     </style>
+
 </head>
 <body>
     <h1>Delete Order</h1>
-    <form action="DeleteOrder" method="post">
+    <form action="DeleteOrder/{oid}" method="post">
         Order ID: <input type="text" name="oid"><br>
    
         <input type="submit" value="Delete">

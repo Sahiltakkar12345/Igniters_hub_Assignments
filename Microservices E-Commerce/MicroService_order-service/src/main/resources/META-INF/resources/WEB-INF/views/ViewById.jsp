@@ -36,6 +36,7 @@
             margin: 5px 0;
         }
     </style>
+    
 </head>
 <body>
     <h1>Order Details</h1>
